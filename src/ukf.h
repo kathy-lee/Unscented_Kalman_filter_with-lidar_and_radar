@@ -99,9 +99,9 @@ class UKF {
   // 
   void AugmentedSigmaPoints(Eigen::MatrixXd& Xsig_aug);
   void SigmaPointPrediction(Eigen::MatrixXd Xsig_aug,
-                            Eigen::MatrixXd& Xsig_pred);
-  void PredictMeanAndCovariance(Eigen::VectorXd* x_pred, 
-                                Eigen::MatrixXd* P_pred);
+                            Eigen::MatrixXd& Xsig_pred, 
+                            double delta_t);
+  void PredictMeanAndCovariance(MatrixXd Xsig_pred);
   void PredictRadarMeasurement(Eigen::VectorXd* z_out, 
                                Eigen::MatrixXd* S_out);
   void UpdateState(Eigen::VectorXd* x_out, 
