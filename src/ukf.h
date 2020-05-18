@@ -101,7 +101,7 @@ public:
   void SigmaPointPrediction(Eigen::MatrixXd Xsig_aug,
                             Eigen::MatrixXd& Xsig_pred,
                             double delta_t);
-  void PredictMeanAndCovariance(MatrixXd Xsig_pred);
+  void PredictMeanAndCovariance(Eigen::MatrixXd Xsig_pred);
   void PredictRadarMeasurement(Eigen::VectorXd& z_pred,
                                Eigen::MatrixXd& S,
                                Eigen::MatrixXd& Zsig,

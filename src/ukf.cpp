@@ -62,7 +62,6 @@ UKF::UKF()
   lambda_ = 3 - n_aug_;
   weights_ = VectorXd(2 * n_aug_ + 1);
   time_us_ = 0;
-
   P_ << std_laspx_ * std_laspx_, 0, 0, 0, 0,
       0, std_laspy_ * std_laspy_, 0, 0, 0,
       0, 0, 1, 0, 0,
@@ -126,7 +125,10 @@ void UKF::Prediction(double delta_t)
     step 2. predict sigma points
     step 3. predcit state and covariance matrix
   */
-  MatrixXd Xsig_aug;
+
+ // create sigma point matrix
+  MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
+  
   AugmentedSigmaPoints(Xsig_aug);
   SigmaPointPrediction(Xsig_aug, Xsig_pred_, delta_t);
   PredictMeanAndCovariance(Xsig_pred_);
@@ -185,9 +187,6 @@ void UKF::AugmentedSigmaPoints(MatrixXd &Xsig_aug)
   // create augmented state covariance
   MatrixXd P_aug = MatrixXd(7, 7);
 
-  // create sigma point matrix
-  MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
-
   // create augmented mean state
   x_aug.head(5) = x_;
   x_aug(5) = 0;
@@ -213,10 +212,6 @@ void UKF::AugmentedSigmaPoints(MatrixXd &Xsig_aug)
 
 void UKF::SigmaPointPrediction(MatrixXd Xsig_aug, MatrixXd &Xsig_pred, double delta_t)
 {
-
-  // create matrix with predicted sigma points as columns
-  MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
-
   // predict sigma points
   for (int i = 0; i < 2 * n_aug_ + 1; ++i)
   {
@@ -370,7 +365,7 @@ void UKF::UpdateState(VectorXd z_pred, MatrixXd S, MatrixXd Zsig, int n_z, Measu
       z_diff(1) += 2. * M_PI;
 
     // state difference
-    VectorXd x_diff = Xsig_pred_.col(i) - x;
+    VectorXd x_diff = Xsig_pred_.col(i) - x_;
     // angle normalization
     while (x_diff(3) > M_PI)
       x_diff(3) -= 2. * M_PI;
