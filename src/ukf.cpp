@@ -22,10 +22,10 @@ UKF::UKF()
   P_ = MatrixXd(5, 5);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 3;
+  std_a_ = 2.0;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.10;
+  std_yawdd_ = 0.50;
 
   /**
    * DO NOT MODIFY measurement noise values below.
@@ -62,11 +62,6 @@ UKF::UKF()
   lambda_ = 3 - n_aug_;
   weights_ = VectorXd(2 * n_aug_ + 1);
   time_us_ = 0;
-  P_ << std_laspx_ * std_laspx_, 0, 0, 0, 0,
-      0, std_laspy_ * std_laspy_, 0, 0, 0,
-      0, 0, 1, 0, 0,
-      0, 0, 0, 1, 0,
-      0, 0, 0, 0, 1;
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
 }
 
@@ -85,6 +80,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package)
       x_ << meas_package.raw_measurements_(0),
           meas_package.raw_measurements_(1),
           0, 0, 0;
+      P_ << std_laspx_ * std_laspx_, 0, 0, 0, 0,
+          0, std_laspy_ * std_laspy_, 0, 0, 0,
+          0, 0, 1, 0, 0,
+          0, 0, 0, 1, 0,
+          0, 0, 0, 0, 1;
     }
     else
     {
@@ -126,9 +126,9 @@ void UKF::Prediction(double delta_t)
     step 3. predcit state and covariance matrix
   */
 
- // create sigma point matrix
+  // create sigma point matrix
   MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
-  
+
   AugmentedSigmaPoints(Xsig_aug);
   SigmaPointPrediction(Xsig_aug, Xsig_pred_, delta_t);
   PredictMeanAndCovariance(Xsig_pred_);
@@ -295,7 +295,7 @@ void UKF::PredictMeanAndCovariance(MatrixXd Xsig_pred)
   }
 }
 
-void UKF::PredictRadarMeasurement(VectorXd& z_pred, MatrixXd& S, MatrixXd& Zsig, int n_z)
+void UKF::PredictRadarMeasurement(VectorXd &z_pred, MatrixXd &S, MatrixXd &Zsig, int n_z)
 {
 
   // transform sigma points into measurement space
@@ -394,15 +394,15 @@ void UKF::UpdateState(VectorXd z_pred, MatrixXd S, MatrixXd Zsig, int n_z, Measu
   P_ = P_ - K * S * K.transpose();
 }
 
-void UKF::PredictLidarMeasurement(VectorXd& z_pred, MatrixXd& S, MatrixXd& Zsig, int n_z)
+void UKF::PredictLidarMeasurement(VectorXd &z_pred, MatrixXd &S, MatrixXd &Zsig, int n_z)
 {
 
   // transform sigma points into measurement space
   for (int i = 0; i < 2 * n_aug_ + 1; ++i)
   { // 2n+1 simga points
     // extract values for better readability
-    Zsig(0,i) = Xsig_pred_(0, i);
-    Zsig(1,i) = Xsig_pred_(1, i);
+    Zsig(0, i) = Xsig_pred_(0, i);
+    Zsig(1, i) = Xsig_pred_(1, i);
   }
 
   // mean predicted measurement
