@@ -128,7 +128,7 @@ void UKF::Prediction(double delta_t)
   */
   MatrixXd Xsig_aug;
   AugmentedSigmaPoints(Xsig_aug);
-  SigmaPointPrediction(Xsig_aug, Xsig_pred_);
+  SigmaPointPrediction(Xsig_aug, Xsig_pred_, delta_t);
   PredictMeanAndCovariance(Xsig_pred_);
 }
 
@@ -397,4 +397,38 @@ void UKF::UpdateState(VectorXd z_pred, MatrixXd S, MatrixXd Zsig, int n_z, Measu
   // update state mean and covariance matrix
   x_ = x_ + K * z_diff;
   P_ = P_ - K * S * K.transpose();
+}
+
+void UKF::PredictLidarMeasurement(VectorXd& z_pred, MatrixXd& S, MatrixXd& Zsig, int n_z)
+{
+
+  // transform sigma points into measurement space
+  for (int i = 0; i < 2 * n_aug_ + 1; ++i)
+  { // 2n+1 simga points
+    // extract values for better readability
+    Zsig(0,i) = Xsig_pred_(0, i);
+    Zsig(1,i) = Xsig_pred_(1, i);
+  }
+
+  // mean predicted measurement
+  z_pred.fill(0.0);
+  for (int i = 0; i < 2 * n_aug_ + 1; ++i)
+  {
+    z_pred = z_pred + weights_(i) * Zsig.col(i);
+  }
+
+  // innovation covariance matrix S
+  S.fill(0.0);
+  for (int i = 0; i < 2 * n_aug_ + 1; ++i)
+  { // 2n+1 simga points
+    // residual
+    VectorXd z_diff = Zsig.col(i) - z_pred;
+    S = S + weights_(i) * z_diff * z_diff.transpose();
+  }
+
+  // add measurement noise covariance matrix
+  MatrixXd R = MatrixXd(n_z, n_z);
+  R << std_laspx_ * std_laspx_, 0,
+      0, std_laspy_ * std_laspy_;
+  S = S + R;
 }
